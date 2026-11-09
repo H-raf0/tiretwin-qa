@@ -1,0 +1,18 @@
+# Build trees (scenarios, reports and coverage are generated inside them)
+build*/
+out/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Generated reports copied out of the build tree
+/reports/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+CMakeUserPresets.json

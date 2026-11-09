@@ -1,0 +1,6 @@
+# Python tooling (scenario generation, CAN replay, reports).
+# Not to be confused with requirements.yaml, which holds the functional requirements.
+python-can>=4.3,<5
+PyYAML>=6.0
+pytest>=8.0
+gcovr>=7.0

@@ -1,0 +1,101 @@
+# Exigences fonctionnelles du détecteur de sous-gonflage (niveau logiciel).
+#
+# Ce fichier est la source unique de vérité de la validation :
+#   - tools/gen_requirement_tests.py en dérive les cas de test GoogleTest
+#     (un test paramétré par entrée de `verification`) ;
+#   - tools/traceability.py le croise avec les rapports JUnit pour produire
+#     la matrice de traçabilité exigence <-> test <-> résultat.
+#
+# Champs d'une exigence :
+#   id            identifiant stable, jamais réutilisé
+#   title, text   énoncé (le « doit » est ce qui est vérifié)
+#   status        implemented | known_limitation
+#   verification  liste de vérifications ; `check` choisit le test générique,
+#                 `scenario` la trace CAN rejouée (voir data/generate_scenarios.py)
+
+requirements:
+  - id: REQ-001
+    title: Détection d'une perte de pression
+    text: >-
+      Le système doit signaler une perte de pression supérieure ou égale à 20 %
+      sur une roue, en désignant la roue concernée, en moins de 120 s de
+      roulage stabilisé après l'établissement de la perte.
+    status: implemented
+    verification:
+      - {check: detection, scenario: loss20_fl, wheel: FL, loss_start_s: 80, loss_full_s: 85, within_s: 120}
+      - {check: detection, scenario: loss20_fr, wheel: FR, loss_start_s: 80, loss_full_s: 85, within_s: 120}
+      - {check: detection, scenario: loss20_rl, wheel: RL, loss_start_s: 80, loss_full_s: 85, within_s: 120}
+      - {check: detection, scenario: loss20_rr, wheel: RR, loss_start_s: 80, loss_full_s: 85, within_s: 120}
+
+  - id: REQ-002
+    title: Absence de fausse alerte en roulage nominal
+    text: >-
+      Le système ne doit lever aucune alerte sur 30 min de roulage nominal
+      (quatre pneus correctement gonflés), incluant lignes droites, courbes,
+      freinages et arrêts.
+    status: implemented
+    verification:
+      - {check: no_warning, scenario: nominal_30min}
+
+  - id: REQ-003
+    title: Robustesse aux virages serrés et aux freinages
+    text: >-
+      Le système ne doit pas lever d'alerte du fait d'un virage serré ou d'un
+      freinage, même prolongés.
+    status: implemented
+    verification:
+      - {check: no_warning, scenario: corner_brake}
+
+  - id: REQ-004
+    title: Perte de communication CAN
+    text: >-
+      En l'absence de trame CAN pendant plus de 200 ms, le système doit
+      signaler l'état « indisponible », sans plantage ni fausse alerte, et
+      reprendre la surveillance au retour des trames. La perte d'une trame
+      isolée ne doit pas rendre le système indisponible.
+    status: implemented
+    verification:
+      - {check: unavailable, scenario: can_dropout, outage_start_s: 100, outage_end_s: 103, timeout_s: 0.2}
+
+  - id: REQ-005
+    title: Équivalence avec l'implémentation de référence
+    text: >-
+      Les sorties de l'implémentation C++ doivent être identiques à celles de
+      la référence Python sur tous les scénarios : états et alertes égaux,
+      écarts numériques inférieurs à 1e-6.
+    status: implemented
+    verification:
+      - {check: back_to_back, scenario: all, tolerance: 1.0e-6}
+
+  - id: REQ-006
+    title: Budget de temps de calcul
+    text: >-
+      Le temps d'exécution d'un pas de calcul doit rester inférieur à 1 ms sur
+      cible desktop (moyenne et 99e centile).
+    status: implemented
+    verification:
+      - {check: step_time, scenario: nominal_30min, max_ms: 1.0}
+
+  - id: REQ-007
+    title: Sous-gonflage simultané des quatre pneus
+    text: >-
+      Le système doit signaler une perte de pression identique et simultanée
+      sur les quatre roues.
+    status: known_limitation
+    rationale: >-
+      La méthode compare les roues entre elles : une perte identique sur les
+      quatre roues ne crée aucun écart relatif. La détecter demande une
+      référence absolue (analyse fréquentielle des vitesses de roues ou
+      vitesse GPS), hors périmètre. Le test associé est un « échec attendu ».
+    verification:
+      - {check: known_limitation, scenario: all_four_minus20}
+
+  - id: REQ-008
+    title: Recalibration après changement de pneu
+    text: >-
+      Sur demande de réinitialisation (changement ou regonflage d'un pneu), le
+      système doit effacer l'alerte en cours, réapprendre sa référence et ne
+      lever aucune fausse alerte avec le nouveau train de pneus.
+    status: implemented
+    verification:
+      - {check: reset, scenario: tyre_change_reset, wheel: FL, reset_s: 195}

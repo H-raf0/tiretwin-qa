@@ -26,6 +26,13 @@ else()
     -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
 endif()
 
+# MinGW: link the GCC runtime statically. Otherwise the executables load whichever
+# libstdc++-6.dll comes first in PATH (Git for Windows ships its own, with a
+# different ABI), which crashes at run time.
+if(MINGW)
+  add_link_options(-static)
+endif()
+
 if(TIRETWIN_COVERAGE)
   if(MSVC)
     message(FATAL_ERROR "TIRETWIN_COVERAGE requires GCC or Clang")

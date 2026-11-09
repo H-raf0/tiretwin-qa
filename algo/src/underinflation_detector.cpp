@@ -1,5 +1,6 @@
 #include "tiretwin/underinflation_detector.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 namespace tiretwin {
@@ -30,6 +31,7 @@ void UnderInflationDetector::reset() {
   for (Axle& axle : axles_) {
     axle.calibration_sum = 0.0;
     axle.offset = 0.0;
+    std::fill(axle.window.begin(), axle.window.end(), 0.0);
     axle.head = 0;
     axle.count = 0;
     axle.window_sum = 0.0;

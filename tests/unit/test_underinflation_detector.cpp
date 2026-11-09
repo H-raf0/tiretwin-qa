@@ -207,6 +207,26 @@ TEST(UnderInflationDetector, ResetRequestClearsTheWarningAndRestartsCalibration)
   EXPECT_EQ(calibrate(detector).status, Status::Monitoring);
 }
 
+// Regression test for a defect found by the back-to-back tests (REQ-005): reset()
+// cleared the window sum but not the window content, so the deviations measured
+// before the reset leaked into the averages computed after it.
+TEST(UnderInflationDetector, NothingMeasuredBeforeAResetLeaksIntoTheNewWindow) {
+  UnderInflationDetector detector;
+  calibrate(detector);
+  drive(detector, straightSample(90.0, factorsWith(Wheel::FrontLeft, kDeflated)), 60.0);
+
+  detector.reset();
+  calibrate(detector);
+  const Output out = drive(detector, straightSample(90.0), 60.0);
+  EXPECT_EQ(out.status, Status::Monitoring);
+  EXPECT_EQ(out.warning_mask, 0);
+  for (const double d : out.deviation_pct) {
+    // Not exactly 0: the tyre is "repaired" in one step here, and the tail of the
+    // low-pass filter biases the new reference by 0.0005 %. The defect gave 0.15 %.
+    EXPECT_NEAR(d, 0.0, 0.002);
+  }
+}
+
 // --- Robustness -------------------------------------------------------------
 TEST(UnderInflationDetector, InputOutageIsReportedAndDoesNotEraseTheDiagnosis) {
   UnderInflationDetector detector;

@@ -1,8 +1,19 @@
 #pragma once
 
 #include <array>
+#include <ostream>
 
 #include "tiretwin/types.hpp"
+
+namespace tiretwin {
+
+/// Readable Status values in GoogleTest failure messages.
+inline void PrintTo(Status status, std::ostream* os) {
+  static const char* const kNames[] = {"Unavailable", "Calibrating", "Monitoring", "Warning"};
+  *os << kNames[static_cast<int>(status)];
+}
+
+}  // namespace tiretwin
 
 namespace tiretwin::testing {
 

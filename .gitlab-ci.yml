@@ -1,0 +1,115 @@
+# TireTwin-QA pipeline
+#
+#   build ──> test ──────────> report ───────> release
+#             coverage                         (package, pages)
+#
+# build         compiles the library, the CLI and the tests; generates the CAN
+#               scenarios and the test cases derived from requirements.yaml
+# test          GoogleTest (unit + functional + back-to-back) and pytest, JUnit reports
+# coverage      instrumented build, gcovr report (Cobertura + HTML), 90 % line gate
+# traceability  requirement <-> test <-> result matrix; fails on any gap
+# package       installable bundle with its validation evidence (tags and default branch)
+# pages         publishes the matrix and the coverage report (default branch)
+
+stages: [build, test, report, release]
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+default:
+  image: python:3.12-bookworm   # ships GCC 12, make and git; CMake/Ninja are added below
+  cache:
+    key: pip
+    paths: [.cache/pip]
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends cmake ninja-build
+    - python -m pip install --quiet -r requirements-dev.txt
+  interruptible: true
+
+build:
+  stage: build
+  script:
+    - cmake --preset release
+    - cmake --build --preset release
+  artifacts:
+    paths: [build/]
+    expire_in: 1 day
+
+test:
+  stage: test
+  needs: [build]
+  script:
+    - ctest --preset release
+    - python -m pytest --junitxml=build/reports/python_tools.xml
+  artifacts:
+    when: always
+    paths: [build/reports/]
+    reports:
+      junit: build/reports/*.xml
+    expire_in: 1 week
+
+coverage:
+  stage: test
+  needs: []
+  script:
+    - cmake --preset coverage
+    - cmake --build --preset coverage
+    - ctest --preset coverage
+    - cmake --build --preset coverage --target coverage
+  coverage: '/^lines: (\d+\.\d+)%/'
+  artifacts:
+    paths: [build-coverage/coverage/]
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build-coverage/coverage/cobertura.xml
+    expire_in: 1 week
+
+traceability:
+  stage: report
+  needs: [test]
+  before_script:
+    - python -m pip install --quiet PyYAML
+  script:
+    - >
+      python tools/traceability.py
+      --requirements requirements.yaml
+      --junit "build/reports/*.xml"
+      --md reports/traceability.md
+      --html reports/traceability.html
+      --revision "$CI_COMMIT_SHORT_SHA"
+      --strict
+  artifacts:
+    when: always
+    paths: [reports/]
+    expire_in: 1 month
+
+package:
+  stage: release
+  needs: [build, coverage, traceability]
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - cmake --install build --prefix dist/tiretwin-qa
+    - mkdir -p dist/tiretwin-qa/validation
+    - cp reports/traceability.md reports/traceability.html dist/tiretwin-qa/validation/
+    - cp build-coverage/coverage/cobertura.xml dist/tiretwin-qa/validation/coverage.xml
+    - cp requirements.yaml dist/tiretwin-qa/validation/
+  artifacts:
+    name: "tiretwin-qa-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    paths: [dist/]
+    expire_in: 3 months
+
+pages:
+  stage: release
+  needs: [coverage, traceability]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  before_script: []
+  script:
+    - mkdir -p public
+    - cp reports/traceability.html public/index.html
+    - cp -r build-coverage/coverage public/coverage
+  artifacts:
+    paths: [public]

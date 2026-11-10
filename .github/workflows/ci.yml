@@ -1,0 +1,88 @@
+# GitHub mirror of .gitlab-ci.yml: same steps, same commands, so that the
+# pipeline also runs where the repository is hosted. Adds a Windows/MSVC build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux GCC - tests, coverage, traceability
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install tooling
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build
+          python -m pip install --quiet -r requirements-dev.txt
+
+      - name: Build
+        run: |
+          cmake --preset release
+          cmake --build --preset release
+      - name: Test (GoogleTest + pytest)
+        run: |
+          ctest --preset release
+          python -m pytest --junitxml=build/reports/python_tools.xml
+
+      - name: Traceability matrix
+        if: always()
+        run: |
+          python tools/traceability.py \
+            --requirements requirements.yaml \
+            --junit "build/reports/*.xml" \
+            --md reports/traceability.md \
+            --html reports/traceability.html \
+            --revision "${GITHUB_SHA::8}" \
+            --strict
+      - name: Publish the matrix in the job summary
+        if: always()
+        run: cat reports/traceability.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Coverage (gcovr)
+        run: |
+          cmake --preset coverage
+          cmake --build --preset coverage
+          ctest --preset coverage
+          cmake --build --preset coverage --target coverage
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-reports
+          path: |
+            build/reports/
+            reports/
+            build-coverage/coverage/
+
+  windows:
+    name: Windows MSVC - tests
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install tooling
+        run: python -m pip install --quiet -r requirements-dev.txt
+      - name: Build
+        run: |
+          cmake -S . -B build
+          cmake --build build --config Release
+      - name: Test (GoogleTest + pytest)
+        run: |
+          ctest --test-dir build -C Release --output-on-failure
+          python -m pytest

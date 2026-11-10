@@ -263,7 +263,8 @@ def main(argv=None) -> int:
         args.html.write_text(render_html(requirements, untraced, orphans, args.revision, date), encoding="utf-8", newline="\n")
 
     for req in requirements:
-        print(f"{req.id}  {req.verdict:17s} {len(req.tests)} test(s)  {req.title}".encode("ascii", "replace").decode())
+        # Titles are left out: they are accented and not every CI console is UTF-8.
+        print(f"{req.id}  {req.verdict:17s} {len(req.tests)} test(s)")
     issues = problems(requirements, orphans)
     for issue in issues:
         print(f"GAP: {issue}", file=sys.stderr)

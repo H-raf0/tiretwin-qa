@@ -32,12 +32,6 @@ WheelSpeedFilter::WheelSpeedFilter(const Config& config)
       settle_samples_(toSamples(config.settle_time_s, config.sample_period_s)),
       settle_remaining_(settle_samples_) {}
 
-void WheelSpeedFilter::reset() {
-  filtered_.fill(0.0);
-  initialised_ = false;
-  settle_remaining_ = settle_samples_;
-}
-
 FilteredSample WheelSpeedFilter::update(const Sample& sample) {
   FilteredSample out;
 

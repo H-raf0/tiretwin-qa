@@ -26,9 +26,6 @@ class WheelSpeedFilter {
 
   FilteredSample update(const Sample& sample);
 
-  /// Back to the power-on state.
-  void reset();
-
  private:
   double alpha_;
   double signal_timeout_s_;

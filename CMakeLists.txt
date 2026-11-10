@@ -21,6 +21,8 @@ endif()
 add_library(tiretwin_warnings INTERFACE)
 if(MSVC)
   target_compile_options(tiretwin_warnings INTERFACE /W4 /WX /permissive-)
+  # fopen/getenv are fine here; keep the code portable instead of using the *_s variants.
+  target_compile_definitions(tiretwin_warnings INTERFACE _CRT_SECURE_NO_WARNINGS)
 else()
   target_compile_options(tiretwin_warnings INTERFACE
     -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
@@ -47,4 +49,22 @@ add_subdirectory(cli)
 if(TIRETWIN_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+# `cmake --build --preset coverage --target coverage`, to be run after the tests.
+# Only the algorithm library is measured: it is the software under test.
+if(TIRETWIN_COVERAGE)
+  find_program(GCOVR_EXECUTABLE gcovr REQUIRED)
+  add_custom_target(coverage
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage
+    COMMAND ${GCOVR_EXECUTABLE}
+            --root ${PROJECT_SOURCE_DIR} --filter ${PROJECT_SOURCE_DIR}/algo/
+            --txt --print-summary
+            --xml ${CMAKE_BINARY_DIR}/coverage/cobertura.xml
+            --html-details ${CMAKE_BINARY_DIR}/coverage/index.html
+            --fail-under-line 90
+            ${CMAKE_BINARY_DIR}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Measuring the coverage of the algorithm library with gcovr"
+    VERBATIM)
 endif()

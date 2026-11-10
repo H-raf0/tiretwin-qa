@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<title>Matrice de traçabilité — TireTwin-QA</title>
+<style>
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:2rem auto;max-width:1100px;padding:0 1rem;color:#1f2933}
+h1{font-size:1.5rem}h2{font-size:1.15rem;margin-top:2rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid #d9dee4;padding:.4rem .6rem;text-align:left;vertical-align:top}
+th{background:#f1f4f8}code{font-size:.8rem;word-break:break-all}
+.badge{display:inline-block;padding:.1rem .5rem;border-radius:.6rem;font-weight:600;font-size:.8rem;white-space:nowrap}
+.PASS{background:#d8f3dc;color:#1b5e20}.FAIL,.NOT,.INCOMPLETE{background:#fde0e0;color:#a31515}
+.XFAIL,.KNOWN{background:#fff1c9;color:#7a5200}.SKIPPED{background:#e6e9ee;color:#47525e}
+.meta{color:#5b6672}.issues{color:#a31515}
+</style></head><body>
+<h1>Matrice de traçabilité — TireTwin-QA</h1>
+<p class="meta">Révision <code>37e8435</code> — générée le 2026-11-10.</p>
+<ul>
+<li>8 exigences : 7 vérifiées, 1 limitation(s) connue(s), 0 en échec, 0 non couverte(s) ou incomplète(s).</li>
+<li>19 tests de validation liés à une exigence.</li>
+<li>67 autres tests (unitaires, outillage) : 67 réussis, 0 en échec.</li>
+</ul>
+<h2>Synthèse par exigence</h2>
+<table><tr><th>Exigence</th><th>Intitulé</th><th>Tests</th><th>Verdict</th></tr>
+<tr><td>REQ-001</td><td>Détection d&#x27;une perte de pression</td><td>4/4</td><td><span class="badge PASS">Réussi</span></td></tr>
+<tr><td>REQ-002</td><td>Absence de fausse alerte en roulage nominal</td><td>1/1</td><td><span class="badge PASS">Réussi</span></td></tr>
+<tr><td>REQ-003</td><td>Robustesse aux virages serrés et aux freinages</td><td>1/1</td><td><span class="badge PASS">Réussi</span></td></tr>
+<tr><td>REQ-004</td><td>Perte de communication CAN</td><td>1/1</td><td><span class="badge PASS">Réussi</span></td></tr>
+<tr><td>REQ-005</td><td>Équivalence avec l&#x27;implémentation de référence</td><td>9/9</td><td><span class="badge PASS">Réussi</span></td></tr>
+<tr><td>REQ-006</td><td>Budget de temps de calcul</td><td>1/1</td><td><span class="badge PASS">Réussi</span></td></tr>
+<tr><td>REQ-007</td><td>Sous-gonflage simultané des quatre pneus</td><td>0/1</td><td><span class="badge KNOWN">Limitation connue</span></td></tr>
+<tr><td>REQ-008</td><td>Recalibration après changement de pneu</td><td>1/1</td><td><span class="badge PASS">Réussi</span></td></tr>
+</table>
+<h2>Détail exigence ↔ test ↔ résultat</h2>
+<table><tr><th>Exigence</th><th>Test</th><th>Scénario</th><th>Résultat</th><th>Mesures</th></tr>
+<tr><td rowspan="4">REQ-001</td><td><code>Requirements/Detection.FaultyWheelIsFlaggedWithinTheDeadline/REQ_001_loss20_fl</code></td><td>loss20_fl</td><td><span class="badge PASS">Réussi</span></td><td>detection_delay_s=14.20</td></tr>
+<tr><td><code>Requirements/Detection.FaultyWheelIsFlaggedWithinTheDeadline/REQ_001_loss20_fr</code></td><td>loss20_fr</td><td><span class="badge PASS">Réussi</span></td><td>detection_delay_s=14.22</td></tr>
+<tr><td><code>Requirements/Detection.FaultyWheelIsFlaggedWithinTheDeadline/REQ_001_loss20_rl</code></td><td>loss20_rl</td><td><span class="badge PASS">Réussi</span></td><td>detection_delay_s=14.38</td></tr>
+<tr><td><code>Requirements/Detection.FaultyWheelIsFlaggedWithinTheDeadline/REQ_001_loss20_rr</code></td><td>loss20_rr</td><td><span class="badge PASS">Réussi</span></td><td>detection_delay_s=13.88</td></tr>
+<tr><td rowspan="1">REQ-002</td><td><code>Requirements/NoWarning.NoWarningOverTheWholeScenario/REQ_002_nominal_30min</code></td><td>nominal_30min</td><td><span class="badge PASS">Réussi</span></td><td>usable_ratio=0.79</td></tr>
+<tr><td rowspan="1">REQ-003</td><td><code>Requirements/NoWarning.NoWarningOverTheWholeScenario/REQ_003_corner_brake</code></td><td>corner_brake</td><td><span class="badge PASS">Réussi</span></td><td>usable_ratio=0.57</td></tr>
+<tr><td rowspan="1">REQ-004</td><td><code>Requirements/Unavailable.OutageIsSignalledAndSurvived/REQ_004_can_dropout</code></td><td>can_dropout</td><td><span class="badge PASS">Réussi</span></td><td></td></tr>
+<tr><td rowspan="9">REQ-005</td><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_nominal_30min</code></td><td>nominal_30min</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_loss20_fl</code></td><td>loss20_fl</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_loss20_fr</code></td><td>loss20_fr</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_loss20_rl</code></td><td>loss20_rl</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_loss20_rr</code></td><td>loss20_rr</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_corner_brake</code></td><td>corner_brake</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_can_dropout</code></td><td>can_dropout</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_all_four_minus20</code></td><td>all_four_minus20</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td><code>Requirements/BackToBack.CppMatchesThePythonReference/REQ_005_tyre_change_reset</code></td><td>tyre_change_reset</td><td><span class="badge PASS">Réussi</span></td><td>max_abs_error_pct=0.0e+00</td></tr>
+<tr><td rowspan="1">REQ-006</td><td><code>Requirements/StepTime.StepFitsInTheComputationBudget/REQ_006_nominal_30min</code></td><td>nominal_30min</td><td><span class="badge PASS">Réussi</span></td><td>mean_step_us=0.048, p99_step_us=0.100</td></tr>
+<tr><td rowspan="1">REQ-007</td><td><code>Requirements/KnownLimitation.DesiredBehaviourIsNotMetYet/REQ_007_all_four_minus20</code></td><td>all_four_minus20</td><td><span class="badge XFAIL">Échec attendu</span></td><td></td></tr>
+<tr><td rowspan="1">REQ-008</td><td><code>Requirements/Reset.ResetClearsTheWarningAndRelearnsTheReference/REQ_008_tyre_change_reset</code></td><td>tyre_change_reset</td><td><span class="badge PASS">Réussi</span></td><td></td></tr>
+</table>
+</body></html>
